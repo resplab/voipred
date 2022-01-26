@@ -1,0 +1,181 @@
+---
+title: "Tutorial for VoIPred: Value of Information for risk prediciton models"
+output: rmarkdown::html_vignette
+
+vignette: >
+  %\VignetteIndexEntry{Tutorial for VoIPred}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+Last uppdate: January 22, 2022 
+Creator: Mohsen Sadatsafavi 
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(VoIPred)
+library(MASS)
+```
+
+
+This vignette provides tutorial for Value of Information (VoI) analysis for risk prediction models. This document accompanies our paper "Uncertainty and the Value of Information in Risk Prediction Modeling - Medical Decision Making (2022)"
+
+In the main paper we provided stylized R code for the bootstrap-based approach to EVPI calculations. Here, we provide two alternative methods: likelihood-based and parameteric Bayesian (based on MCMC and Gibbs sampling). For completeless the original bootstrap-based code is also provided. 
+
+Our sample dataset is the birth weight data in the MASS package. This dataset contains `r dim(MASS::birthwt)[1] ` rows. The outcome (response variable) is the presence of low birth weight ('low') and for simplicity we work with two predictors: 'age' (mother's age in years) and 'lwt' (mother's weight in pounds at last menstrual period).
+
+## 1.Bootstrap-based method
+```{r}
+library(MASS)
+data(birthwt) 
+n <- dim(birthwt)[1]
+z <- 0.2 #This is the risk threshold
+model <- glm(low ~ age + lwt, family=binomial(link="logit"), data= birthwt) 
+#Step 1:
+pi <- predict(model, type="response") #Predicted risks
+#Step 2:
+NBmodel <- NBall <- NBmax <- rep(0,1000)
+for(i in 1:1000) 
+{
+  #Step 2.1
+  bsdata <-  birthwt[sample(1:n, n, replace = T),] 
+  bsmodel <- glm(low ~ age + lwt, family=binomial(link="logit"), data=bsdata)
+  #Step 2.2
+  p <- predict(bsmodel, newdata =  birthwt, type="response")  #Random draws of  correct risks
+  #Step 2.3 
+  NBall[i] <- mean(p-(1-p)*z/(1-z)) 
+  NBmodel[i] <- mean((pi>z)*(p-(1-p)*z/(1-z))) #NB of using the model
+  NBmax[i] <- mean((p>z)*(p-(1-p)*z/(1-z))) #NB of using the correct risks
+}
+#Step 3 
+ENBall <- mean(NBall); ENBmodel <- mean(NBmodel); ENBmax <- mean(NBmax)
+#Step 4
+EVPI <- ENBmax-max(0,ENBmodel,ENBall)
+EVPIr <- (ENBmax-max(0,ENBall))/(ENBmodel-max(0,ENBall))
+```
+
+Which results in the following values:
+
+NB of treating all: `r ENBall`
+
+NB of the proposed model: `r ENBmodel`
+
+NB of the correct model: `r ENBmax`
+
+EVPI: `r EVPI`
+
+Relative EVPI: `r EVPIr`
+
+
+
+
+## 2.Fully parametric Bayesian approach
+This is a fully Bayesian estimation approach for EVPI. This approach requires specifying priors for regression coefficients (which here we choose to be non-informative). The core Gibbs sampler (bugs_model) is written for WinBUGS/OpenBUGS and requires a local instance of OpenBUGS and the R package R2OpenBUGS.
+
+```{r}
+
+library(R2OpenBUGS)
+library(MASS)
+
+data(birthwt) 
+
+bugsmodel <- function()
+{
+  z <- 0.2
+  for(i in 1:N)
+  {
+    p[i] <-  1/ (1+exp(-(b0 + b1*age[i] + b2*lwt[i])))
+    low[i]~dbern(p[i])
+    
+    nball[i] <- p[i]-(1-p[i])*z/(1-z)
+    nbmodel[i] <- step(pi[i]-z)*(p[i]-(1-p[i])*z/(1-z))
+    nbmax[i] <- step(p[i]-z)*(p[i]-(1-p[i])*z/(1-z))
+  }
+  
+  NBall <- mean(nball[])
+  NBmodel <- mean(nbmodel[])
+  NBmax <- mean(nbmax[])
+  
+  b0~dnorm(0,0.00001)
+  b1~dnorm(0,0.00001)
+  b2~dnorm(0,0.00001)
+}
+
+model <- glm(low ~ age + lwt, family=binomial(link="logit"), data=birthwt)
+pi <- predict(model,type="response")
+betahats <- unname(coefficients(model))
+
+bugsinput<-list(N=dim(birthwt)[1],low=birthwt$low,age=birthwt$age,lwt=birthwt$lwt, pi=pi)
+
+nsim <- 20000 #More simulation runs because of autocorrelation in MCMC
+
+out<-bugs(data=bugsinput, inits=list(list(b0=betahats[1], b1=betahats[2], b2=betahats[2])), model.file=bugsmodel, parameters.to.save = c('NBall','NBmodel','NBmax'), n.chains = 1, n.burnin = 5000, n.iter = nsim+5000, bugs.seed=1)
+
+ENBall <- mean(out$sims.list$NBall); ENBmodel <- mean(out$sims.list$NBmodel); ENBmax <- mean(out$sims.list$NBmax)
+
+EVPI<-ENBmax-max(0,ENBmodel,ENBall)
+EVPIr<-(ENBmax-max(0,ENBall))/(ENBmodel-max(0,ENBall))
+```
+Which results in the following values:
+
+NB of treating all: `r ENBall`
+
+NB of the proposed model: `r ENBmodel`
+
+NB of the correct model: `r ENBmax`
+
+EVPI: `r EVPI`
+
+Relative EVPI: `r EVPIr`
+
+
+
+## 3.Likelihood-based approach
+This is very similar to the bootstrap-based approach, only that instead of sampling true risks (p) from fitting new models in each bootstrap sample, we generate such draws from the joint multivariate distribution for the regression coefficients. We approximate this distribution to be multivariate normal with the vector of mean and covariance matrix taken from, respectively, the maximum-likelihood estimates and covariance matrix of coefficients. The R code requires the mvtnorm package for sampling from multivariate normal distribution.
+
+```{r}
+library(MASS)
+library(mvtnorm)
+data(birthwt) 
+
+n <- dim(birthwt)[1]
+
+z <- 0.2 
+
+model <- glm(low ~ age + lwt, family=binomial(link="logit"), data=birthwt) 
+pi <- predict(model, type="response") #Predicted risks
+
+mu <- coefficients(model)
+sigma <- vcov(model)
+
+NBmodel <- NBall <- NBmax <- rep(0,10000)
+betas <- mvtnorm::rmvnorm(10000,mu,sigma)
+
+for(i in 1:10000) #High nsim given small sample size and high SEs 
+{
+  p <- 1 / (1+exp(-(betas[i,1] + betas[i,2]*birthwt[,'age'] + betas[i,3]*birthwt[,'lwt'])))
+  
+  NBall[i] <- mean(p-(1-p)*z/(1-z)) #NB of treating all 
+  NBmodel[i] <- mean((pi>z)*(p-(1-p)*z/(1-z))) #NB of using the model
+  NBmax[i] <- mean((p>z)*(p-(1-p)*z/(1-z))) #NB of using the correct risks
+}
+
+ENBall<-mean(NBall);ENBmodel<-mean(NBmodel); ENBmax<-mean(NBmax)
+
+EVPI<-ENBmax-max(0,ENBmodel,ENBall)
+EVPIr<-(ENBmax-max(0,ENBall))/(ENBmodel-max(0,ENBall))
+```
+Which results in the following values:
+
+NB of treating all: `r ENBall`
+
+NB of the proposed model: `r ENBmodel`
+
+NB of the correct model: `r ENBmax`
+
+EVPI: `r EVPI`
+
+Relative EVPI: `r EVPIr`
+
