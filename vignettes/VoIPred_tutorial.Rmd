@@ -15,7 +15,7 @@ Creator: Mohsen Sadatsafavi
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-library(VoIPred)
+library(voipred)
 library(MASS)
 ```
 

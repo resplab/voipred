@@ -65,11 +65,12 @@ voi.glm<-function(reg_obj, n_sim=1000, bootstrap=0, lambdas=(1:99)/100)
 
 
 
+#  voi.glmnet function
+# @param reg_obj: any object that you can apply predict with new data to get predictions. The structure should represent the correct model
+# @param x: The model matrix of predictors
+# @param y: The vector of responses
+# @param pi: optional. Predictions from the current model. If not supplied, the predictions from reg_object will be used
 #' @export
-#' @param reg_obj: any object that you can apply predict with new data to get predictions. The structure should represent the correct model
-#' @param x: The model matrix of predictors
-#' @param y: The vector of responses
-#' @param pi: optional. Predictions from the current model. If not supplied, the predictions from reg_object will be used
 voi.glmnet <- function(reg_obj, x, y, pi=NULL, n_sim=1000, lambdas=(1:99)/100, Bayesian_bootstrap=F, empirical=F)
 {
   aux$coeffs <- t(as.matrix(coefficients(reg_obj)))
