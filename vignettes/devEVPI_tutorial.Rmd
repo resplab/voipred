@@ -1,0 +1,344 @@
+
+---
+title: "Development EVPI tutorial"
+author: "Mohsen Sadatsafavi"
+date: "2/5/2022"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+set.seed(3344)
+```
+
+### Introduction
+
+This tutorial is a step-by-step calculation of the Expected Value of Perfect Information (EVPI) for risk prediction model.
+
+To keep things simple, we use the small and simple data set birthwt from the MASS package. These data are for the new born and were collected at Baystate Medical Center, Springfield, Mass during 1986. 
+
+Our outcome of interest is the binary variable 'low', taking a value of 1 if the baby's weight is too low (<2.5Kg). We use the following 3 predictors:
+
+age: mother's age in years.
+
+lwt: mother's weight in pounds at last menstrual period.
+
+smoke: smoking status during pregnancy.
+
+```{r cars}
+data('birthwt', package="MASS")
+```
+
+The data has `r sum(birthwt$low)[1]` rows. The outcome was observed in `r sum(birthwt$low)` births.
+
+Because we are working with a subset of data, we keep a clean, targetted dataset that we call dev_data (development data).
+
+Also, the risk threshold of interest is 0.2.
+
+```{r}
+dev_data <- data.frame(birthwt[,c('age','lwt','smoke')], Y=birthwt$low)
+
+n <- dim(dev_data)[1] #n is the number of observations.
+z <- 0.2 #this is the risk threshold.
+```
+
+
+This is how the data looks like:
+```{r}
+head(dev_data)
+```
+
+
+### Our 'proposed' model
+
+To proceed, we fit an uncomplicated logistic regression model:
+
+```{r}
+model <- glm(Y ~ age + lwt + smoke, data=dev_data, family = binomial(link="logit"))
+```
+
+And this is a summary of this proposed model:
+
+```{r}
+print(model)
+```
+
+
+Let's go ahead and calculate the predicted risks (pred) for each patients:
+
+```{r}
+dev_data$pi <- predict(model,type='response')
+```
+
+```{r}
+head(dev_data)
+```
+
+
+
+### The net benefit of this model
+Our metric of interest is Net Benefit (NB). At risk threshold of z, it is calculated as
+
+$P(True positive) - P(False positive)\frac{z}{1-z}$
+
+Which in the sample can be estimated as
+
+$NB(z)=\sum_{i=1}^nI(π_i>z)\{Y_i-(1-Y_i)\frac{z}{1-z}\}$
+
+Which translates to the following code:
+
+```{r}
+z <- 0.2
+
+NB_model <- mean((dev_data$pi>z)*(dev_data$Y-(1-dev_data$Y)*z/(1-z)))
+
+print(NB_model)
+```
+
+### Uncertainty in risk prediction
+
+Because the sample size is finite (and in fact quite small in this example), regression coefficients are uncertain. Our model is therefore likely different from the 'correct model'; that is, the model with correct coefficients.
+
+Because of this discrepancy, the use of the proposed model will be sub-optimal compared with the use of the correct model. As such, making decisions about patient management based on predicted risks from the proposed model can be different from the decision based on the correct risks. 
+
+The EVPI captures the expected loss in NB because of not knowing the correct risks.
+
+
+### NB calculations if the correct model is known
+
+Imagine for the moment, we know the truth: that the correct model associating our predictors of interest to the risk of the outcome if of the form
+
+$logit(P(Y))=  1 - 0.03899*age  - 0.01*lwt + 0.5*smoke$ 
+
+
+Because we know the truth, we can calculate the actual risk of outcome, denoted by p, for each observation in the data set:
+
+```{r}
+dev_data$p <- 1/(1+exp(-(1-0.03899*dev_data$age-0.01*dev_data$lwt+0.5*dev_data$smoke)))
+```
+
+Now our data looks like
+
+```{r}
+head(dev_data)
+```
+
+Now that we have the correct risks, we can calculate the net benefit directly using p:
+
+$NB(z)=\sum_{i=1}^n I(π_i>z)(p_i-(1-p_i)\frac{z}{1-z})$
+
+
+This is very similar to the original euqation for NB, only that we have replaced Y with correct probabilities. Implementing this in R, we have
+
+```{r}
+NB_model <- mean((dev_data$pi>z)*(dev_data$p - (1-dev_data$p)*z/(1-z)))
+
+print(NB_model)
+```
+
+
+We similarly calculate the NB of treating all:
+
+```{r}
+NB_all <- mean((dev_data$p - (1-dev_data$p)*z/(1-z)))
+print(NB_all)
+```
+
+
+
+### NB of the correct model itself ($NB_max$)
+
+If we know the correct model, then why even using our proposed model? We can calculate the NB of the correct model
+
+$NB_{max}(z)= \sum_{i=1}^n I(p_i>z)(p_i-(1-p_i)\frac{z}{1-z})$
+
+
+Which is easy to calculate:
+```{r}
+NB_max <- mean((dev_data$p>z)*(dev_data$p - (1-dev_data$p)*z/(1-z)))
+print(NB_max)
+```
+
+
+
+
+### A Bayesian approach to NB calculation
+
+The above calculations was based on the complete knowledge about the correct model. However, we do now know the correct model! How should we proceed?
+
+This requires a Bayesian approach towards NB calculations. We treat the parameters of the correct model as random variables, let's call them θ, and assume we know aboue their distirbution via P(Θ).
+
+Then, we can calculate the expected value of NBs as
+
+$\text{E}NB_{model}=\text{E}_θNB_{model}(Θ;z)$
+$\text{E}NB_{all}=\text{E}_θNB_{all}(Θ;z)$
+$\text{E}NB_{max}=\text{E}_θNB_{max}(Θ;z)$
+
+
+The algorithm looks like this:
+1. Sample from the P(Θ). This sample can be taken as the truth for the moment.
+2. Calculate the NB of your model, NB of treating all, and NB of using this correct model. Store the results in memory
+3. Repeat steps 1-2 many times.
+4. Average the results.
+
+
+#### Bootstrap for sampling from the posterior distribution of the correct risks
+
+The big question is indeed how to sample from the parameters of the correct model. A straightforward approach is to use bootstrapping: We bootstrap the dataset, and fit a new model. We make predction from this model to the original data set. This will a sample from the correct risks:
+
+
+```{r}
+NB_model <- NB_max <- NB_all <- rep(0,1000)
+
+for(i in 1:1000)
+{
+  bs_data <- dev_data[sample(1:n, size = n, replace = T),]
+  bs_model <- glm(Y ~ age + lwt + smoke, data=bs_data, family = binomial(link="logit"))
+  p <- predict(bs_model, newdata = dev_data, type='response')
+  
+  NB_model[i] <- mean((dev_data$pi>z)*(p - (1-p)*z/(1-z)))
+  NB_all[i] <- mean((p - (1-p)*z/(1-z)))
+  NB_max[i] <- mean((p>z)*(p - (1-p)*z/(1-z)))
+}
+```
+
+Let's look at how these quantities are distirbuted:
+
+```{r echo=FALSE}
+d1 <- data.frame(length = NB_model)
+d2 <- data.frame(length = NB_all)
+d3 <- data.frame(length = NB_max)
+
+d1$title <- 'NB_model'
+d2$title <- 'NB_all'
+d3$title <- 'NB_max'
+
+# and combine into your new data frame vegLengths
+NBs <- rbind(d1,d2,d3)
+ggplot(NBs, aes(length, fill = title)) + geom_density(alpha = 0.2)
+```
+
+#### Calculating EVPI
+
+Now we can calculate EVPI:
+
+
+```{r}
+ENB_model <- mean(NB_model)
+ENB_all <- mean(NB_all)
+ENB_max <- mean(NB_max)
+
+EVPI <- ENB_max - max(0,ENB_model,ENB_all)
+
+message(EVPI)
+```
+
+
+### Putting things together: R code for EVPI calculation
+The code below consolidates everything, and also does the calculations for a range of threshold:
+
+```{r}
+n <- dim(dev_data)[1]
+z <- (0:99)/100
+n_sim <- 1000
+
+dev_data$pi <- predict(model, type="response") #Predicted risks
+
+#Step 2:
+NB_model <- NB_all <- NB_max <- rep(0,length(z))
+for(i in 1:n_sim) 
+{
+  #Step 2.1
+  bs_data <-  dev_data[sample(1:n, n, replace = T),] 
+  bs_model <- glm(Y ~ age + lwt + smoke, family = binomial(link="logit"), data=bs_data)
+  #Step 2.2
+  p <- predict(bs_model, newdata =  dev_data, type="response") #draw from correct risks   
+  #Step 2.3 
+  for(j in 1:length(z))
+  {
+    NB_all[j] <- NB_all[j] + mean(p-(1-p)*(z[j]/(1-z[j])))/n_sim #NB of treating all
+    NB_model[j] <- NB_model[j] + mean((dev_data$pi>z[j])*(p-(1-p)*z[j]/(1-z[j])))/n_sim #NB of using the model
+    NB_max[j] <- NB_max[j] + mean((p>z[j])*(p-(1-p)*z[j]/(1-z[j])))/n_sim #NB of using the correct risks
+  }
+}
+
+#Step 4
+EVPI <- NB_max-pmax(0,NB_model,NB_all)
+
+plot(z, EVPI, xlab="Threshold", ylab="EVPI", type='l', col='red')
+```
+
+
+### How to interpret EVPI?
+
+EVPI is in the true positive scale. This is rather context-specific. We think EVPI can best be interpreted compared to the NB that the proposed model provides. To this end, we propose Incremental NB and Relative EVPI.
+
+To proceed, we note that we have three Nb entities to compare:
+- NB of the best decision without any risk stratification: $max(0,\text{E}NB_{all})$
+- NB of the best decision with the proposed model: $max(0,\text{E}NB_{all},\text{E}NB_{model})$
+- NB of the best decision with the correct model: $NB_{max}$
+
+So, the Incremental Benefit (ΔNB) with current information is
+ $\text{E}INB_\text{Current Information}=max(0,\text{E}NB_{all},\text{E}NB_{model}) - max(0,\text{E}NB_{all})$
+ 
+Where is with perfect information it is:
+ $\text{E}INB_\text{Perfect Information}=NB_{max}-max(0,\text{E}NB_{all})$
+ 
+Which can be calculated as
+
+```{r}
+INB_current <- pmax(0,NB_model,NB_all)-pmax(0,NB_all)
+INB_perfect <- NB_max-pmax(0,NB_all)
+```
+
+Our suggestion for the graphical presentation is an overlay of the two INB plots:
+```{R}
+plot(z, INB_current, type='l', col='black', ylim=c(0,max(INB_current,INB_perfect)), xlab="Threshold", ylab="Incremental NB")
+lines(z,NB_max-pmax(0,NB_all),type='l', col='red', ylim=c(0,max(INB_current,INB_perfect)))
+```
+Which nicely shows the difference between the INB curves across the thresholds. This difference is the EVPI, and this graphs shows its extent compared with the gain in NB with the proposed model.
+
+
+As well, we suggest taking the ratio of the two, which we call Relative EVPI (EVPIr):
+```{r}
+EVPIr <- INB_perfect/INB_current
+```
+
+
+However, a simple plot of this graph might not be very informative (especially with small samples like ours):
+
+```{R}
+plot(z, EVPIr, type='l', xlab="Threshold", ylab="Relative EVPI")
+```
+
+This is indeed a messy, uninformative graph, and the reason is obvious in the INB graph: in many instances, the INB under current information, the denominator, is 0. If INB under perfect information is 0 (like around threshold value of XXX) we will get 0/0 `r 0/0`. If INB under perfect information is non-zero, with get +∞. These have two different meanings:
+
+ - An EVPIr of 0/0 means under perfect (and thus correct) information, the model is not expected to do better than the default decisions. 
+ 
+ - An EVPIr of +∞ means that while under current information the model is not expected to do better than default decisions, under perfect information it might! Thus the model is not good to go towards validation. But procuring more development sample and revising the model might be justified.
+ 
+The EVPIr graph can therefore be upgraded to accomodate these. We cap it on the Y-axis at 10 (to us, an EVPIr of >10 has the same implications as an EVPIr=+∞). We also label the areas of the X-axis according to whether EVPIr is 0/0 or +∞.
+
+So we do a little processing to identify the areas where EVPIr is 0/0 versus +∞:
+
+```{r}
+max_y <- min(max(EVPIr,na.rm = T),10)
+yNaN <- rep(0,length(z))
+yNaN[which(is.nan(EVPIr))] <- 1
+yInf <- rep(0,length(z))
+yInf[which(EVPIr>10)] <- 1
+w <- rep(1/length(z),length(z))
+plot(z, EVPIr, type='l', col='red', ylim=c(0,max_y), xlab="Threshold", ylab="Relative EVPI")
+par(new=T)
+barplot(yNaN, w, border='grey', col='grey', xlim=c(0,1), ylim=c(0,max_y), xlab=NULL, ylab=NULL, space=0, axes=FALSE)
+par(new=T)
+barplot(yInf, w, border='black', col='black', xlim=c(0,1), ylim=c(0,max_y), xlab=NULL, ylab=NULL, space=0, axes=FALSE)
+legend(0.8,9, legend=c("0/0",">10"),col=c("grey","black"), lty=c(1,1), lwd=c(10,10), border=NA)
+```
+

@@ -50,6 +50,9 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
+      <a href="../articles/devEVPI_tutorial.html">Development EVPI tutorial</a>
+    </li>
+    <li>
       <a href="../articles/VoIPred_tutorial.html">Tutorial for VoIPred: Value of Information for risk prediciton models</a>
     </li>
   </ul>
@@ -113,11 +116,11 @@
 <span class="va">EVPI</span> <span class="op">&lt;-</span> <span class="va">ENBmax</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBmodel</span>,<span class="va">ENBall</span><span class="op">)</span>
 <span class="va">EVPIr</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">ENBmax</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBall</span><span class="op">)</span><span class="op">)</span><span class="op">/</span><span class="op">(</span><span class="va">ENBmodel</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBall</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>Which results in the following values:</p>
-<p>NB of treating all: 0.1404403</p>
-<p>NB of the proposed model: 0.1476913</p>
-<p>NB of the correct model: 0.1518468</p>
-<p>EVPI: 0.0041556</p>
-<p>Relative EVPI: 1.5731083</p>
+<p>NB of treating all: 0.1406051</p>
+<p>NB of the proposed model: 0.1477489</p>
+<p>NB of the correct model: 0.1519447</p>
+<p>EVPI: 0.0041958</p>
+<p>Relative EVPI: 1.5873386</p>
 </div>
 <div class="section level2">
 <h2 id="fully-parametric-bayesian-approach">2.Fully parametric Bayesian approach<a class="anchor" aria-label="anchor" href="#fully-parametric-bayesian-approach"></a>
@@ -210,11 +213,11 @@
 <span class="va">EVPI</span><span class="op">&lt;-</span><span class="va">ENBmax</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBmodel</span>,<span class="va">ENBall</span><span class="op">)</span>
 <span class="va">EVPIr</span><span class="op">&lt;-</span><span class="op">(</span><span class="va">ENBmax</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBall</span><span class="op">)</span><span class="op">)</span><span class="op">/</span><span class="op">(</span><span class="va">ENBmodel</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBall</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>Which results in the following values:</p>
-<p>NB of treating all: 0.144018</p>
-<p>NB of the proposed model: 0.1503361</p>
-<p>NB of the correct model: 0.1542353</p>
-<p>EVPI: 0.0038993</p>
-<p>Relative EVPI: 1.6171572</p>
+<p>NB of treating all: 0.1447509</p>
+<p>NB of the proposed model: 0.1508027</p>
+<p>NB of the correct model: 0.1547467</p>
+<p>EVPI: 0.003944</p>
+<p>Relative EVPI: 1.6517109</p>
 </div>
   </div>
 
@@ -230,7 +233,7 @@
 
       <footer><div class="copyright">
   <p></p>
-<p>Developed by First Last.</p>
+<p>Developed by Mohsen Sadatsafavi.</p>
 </div>
 
 <div class="pkgdown">
