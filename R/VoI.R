@@ -12,53 +12,119 @@ get_aux<-function()
 
 
 
-
-# bootstrap: 0=no (parametric); 1=ordinary; 2=Bayesian
+#' @title  voi_glmn function
+#' @param n_sim Number of simulations required. 
+#' @param glm_object The GLM object representing the proposed model
+#' @param thresholds thresholds at which EVPI is calculated
+#' @param mc_type any of "bootstrap", "Bayesian_bootstrap", or "likelihood"
+#' @param data for EVPI calculations. 
+#' @param pi A vector of predicted values. Required only if data is provided. If a string or single number it indicates the corresponding columns in data
+#' @param truth_formula Formula of the correct model. Its parameters will be estimated repeatedly using the data
+#' @param family GLM family and link function 
 #' @export
-voi.glm<-function(reg_obj, n_sim=1000, bootstrap=0, lambdas=(1:99)/100)
+voi_glm <- function(n_sim, thresholds=(0:99)/100, glm_object=NULL, mc_type="bootstrap", data=NULL, pi=NULL, truth_formula=NULL, family=binomial(link="logit"))
 {
-  sample_size <- dim(reg_obj$data)[1]
-  mu <- coefficients(reg_obj)
-  sigma <- vcov(reg_obj)
-
-  pi<-predict(reg_obj,type="response")
-  aux$pi <- pi
-
-  NB_test <-  NB_all <-  NB_max  <- rep(0, length(lambdas))
-
-  for(i in 1:n_sim)
-  {
-    if(bootstrap>0)
-    {
-      ws <- bootstrap(sample_size, bootstrap-1)
-      bs_data <- cbind(reg_obj$data, ws=ws)
-      bs_reg <- glm(data=bs_data, formula = reg_obj$formula, family=reg_obj$family, weights = ws)
-      p <- as.vector(predict(bs_reg, newdata=reg_obj$data, type="response"))
-    }
+  if(is.null(data))
+    if(is.null(glm_object))
+      stop("both glm_object and data were NULL. One is needed.\n")
     else
-    {
-      new_betas <- rmvnorm(1, mean=mu, sigma=sigma)
-      p <- as.vector(1/(1+exp(-(new_betas %*% t(model.matrix(reg_obj))))))
-    }
-
-    if(i==1) plot(pi,p)
-
-    for(j in 1:length(lambdas))
-    {
-      NB_test[j] <- NB_test[j] + mean((p - (1 - p) * lambdas[j] / (1 - lambdas[j])) * (pi > lambdas[j]))
-
-      NB_all[j] <- NB_all[j] + mean((p - (1 - p) * lambdas[j] / (1 - lambdas[j])) * 1)
-
-      NB_max[j] <- NB_max[j] + mean((p - (1 - p) * lambdas[j] / (1 - lambdas[j])) * (p > lambdas[j]))
-    }
-    #cat('.')
+      data <- glm_object$data
+    
+  
+  if(is.null(pi))
+    if(is.null(glm_object))
+      stop("both glm_object and model_formula were NULL. One is needed.\n")
+    else
+      pi <- predict(glm_object,newdata = data, type="response")
+  else
+  {
+    if(length(pi)==1) pi <- data[,pi]
   }
-
-  voi <- (NB_max-pmax(0,NB_test,NB_all))/n_sim
-
-  res <-cbind(lambda=lambdas, voi=voi, NB_all=NB_all/n_sim, NB_test=NB_test/n_sim, NB_max=NB_max/n_sim)
-
-  return(res)
+  
+  if(is.null(truth_formula))
+    if(is.null(glm_object))
+      stop("both glm_object and turth_formula were NULL. One is needed.\n")
+  else
+    truth_formula <- glm_object$call$formula
+  
+  if(is.null(family))
+    if(is.null(glm_object))
+      stop("both glm_object and turth_formula were NULL. One is needed.\n")
+  else
+    family <- glm_object$call$family
+  
+  n <- dim(data)[1]
+  
+  if(mc_type=="bootstrap")  
+  {
+    NB_all <- NB_model <- NB_max <- rep(0,length(thresholds))
+    for(i in 1:n_sim)
+    {
+      bs_data <- data[sample(1:n,n,replace = T),]
+      bs_model <- glm(formula = truth_formula, family=family, data = bs_data)
+      p <- predict(bs_model, newdata=data, type="response")
+      
+      for(j in 1:length(thresholds))
+      {
+        NB_all[j] <- NB_all[j] + mean((p-(1-p)*thresholds[j]/(1-thresholds[j])))
+        NB_model[j] <- NB_model[j] + mean((pi>thresholds[j])*(p-(1-p)*thresholds[j]/(1-thresholds[j])))
+        NB_max[j] <- NB_max[j] + mean((p>thresholds[j])*(p-(1-p)*thresholds[j]/(1-thresholds[j])))
+      }
+    }
+  }
+  
+  
+  if(mc_type=="Bayesian_bootstrap")  
+  {
+    NB_all <- NB_model <- NB_max <- rep(0,length(thresholds))
+    for(i in 1:n_sim)
+    {
+      w <- c(0,sort(runif(n-1)),1)
+      data$w <- w[-1]-w[-length(w)]
+      bs_model <- glm(formula = truth_formula, family=family, data = data, weights = w)
+      p <- predict(bs_model, newdata=data, type="response")
+      
+      for(j in 1:length(thresholds))
+      {
+        NB_all[j] <- NB_all[j] + mean((p-(1-p)*thresholds[j]/(1-thresholds[j])))
+        NB_model[j] <- NB_model[j] + mean((pi>thresholds[j])*(p-(1-p)*thresholds[j]/(1-thresholds[j])))
+        NB_max[j] <- NB_max[j] + mean((p>thresholds[j])*(p-(1-p)*thresholds[j]/(1-thresholds[j])))
+      }
+    }
+  }
+  
+  
+  if(mc_type=="likelihood")  
+  {
+    NB_all <- NB_model <- NB_max <- rep(0,length(thresholds))
+    mu <- coefficients(glm_object)
+    covmat <- vcov(glm_object)
+    for(i in 1:n_sim)
+    {
+      betas <- rmvnorm(1,mu,covmat)
+      model$coefficients <- betas
+      p <- predict(model, newdata=data, type="response")
+      
+      for(j in 1:length(thresholds))
+      {
+        NB_all[j] <- NB_all[j] + mean((p-(1-p)*thresholds[j]/(1-thresholds[j])))
+        NB_model[j] <- NB_model[j] + mean((pi>thresholds[j])*(p-(1-p)*thresholds[j]/(1-thresholds[j])))
+        NB_max[j] <- NB_max[j] + mean((p>thresholds[j])*(p-(1-p)*thresholds[j]/(1-thresholds[j])))
+      }
+    }
+  }
+  
+  NB_all <- NB_all / n_sim
+  NB_model <- NB_model / n_sim
+  NB_max <- NB_max / n_sim
+  
+  INB_current <- pmax(0,NB_all,NB_model) - pmax(0,NB_all)
+  INB_perfect <- NB_max - pmax(0,NB_all)
+  
+  EVPI <- INB_perfect - INB_current
+  EVPIr <- INB_perfect / INB_current
+  
+  return(data.frame(threshold=thresholds, EVPI=EVPI, EVPIr=EVPIr, INB_perfect=INB_perfect, INB_current=INB_current, NB_all=NB_all, NB_model=NB_model, NB_max=NB_max))
 }
 
 
@@ -71,7 +137,7 @@ voi.glm<-function(reg_obj, n_sim=1000, bootstrap=0, lambdas=(1:99)/100)
 # @param y: The vector of responses
 # @param pi: optional. Predictions from the current model. If not supplied, the predictions from reg_object will be used
 #' @export
-voi.glmnet <- function(reg_obj, x, y, pi=NULL, n_sim=1000, lambdas=(1:99)/100, Bayesian_bootstrap=F, empirical=F)
+voi_glmnet <- function(reg_obj, x, y, pi=NULL, n_sim=1000, lambdas=(1:99)/100, Bayesian_bootstrap=F, empirical=F)
 {
   aux$coeffs <- t(as.matrix(coefficients(reg_obj)))
   aux$x <- x
@@ -186,7 +252,7 @@ voi.glmnet <- function(reg_obj, x, y, pi=NULL, n_sim=1000, lambdas=(1:99)/100, B
 
 
 #' @export
-voi.glmnet2 <- function(formula, data, pi, n_sim=1000, lambdas=(1:99)/100, Bayesian_bootstrap=F, empirical=F, weights=NULL)
+voi.glmnet2 <- function(formula, data, pi, n_sim=1000, lambdas=(1:99)/100, Bayesian_bootstrap=F, weights=NULL)
 {
   x <- model.matrix(formula,data)
   y <- data[,all.vars(formula)[1]]
@@ -370,30 +436,32 @@ process_results <- function(res, graphs=c("voi","summit","dc"),th=NULL)
 
 
 
-#' @export
-decision_curve <- function(y, pi, lambdas=(1:99)/100)
-{
-  NB_model <- rep(0, length(lambdas))
-  NB_all <- NB_model
 
-  for(j in 1:length(lambdas))
+
+#' @export
+plot_evpir <- function(EVPIr, lambdas=(0:99)/100, max_y=10, ...)
+{
+  args <- list(...)
+  if(!is.null(args$col))
   {
-    NB_model[j] <- mean((y - (1 - y) * lambdas[j] / (1 - lambdas[j])) * (pi > lambdas[j]))
-    NB_all[j] <- mean((y - (1 - y) * lambdas[j] / (1 - lambdas[j])) * 1)
+    if(length(args$col)<3) stop("If providing color, 3 should be mentioned (for the curve, 00, and inf).")
+    cols <- args$col
   }
-
-  return(cbind(lambda=lambdas, NB_none=NB_all*0, NB_model=NB_model, NB_all=NB_all))
-}
-
-
-
-#' @export
-plot_decision_curve <- function(dc_data)
-{
-  max_y <-max(dc_data[,c('NB_none','NB_model','NB_all')])
-  plot(dc_data[,'lambda'],dc_data[,'NB_none'],type='l',ylim=c(0,max_y),xlim=c(0,1),col='gray', xlab="Threshold", ylab="Net benefit")
-  lines(dc_data[,'lambda'],dc_data[,'NB_all'],type='l',ylim=c(0,max_y),col='black')
-  lines(dc_data[,'lambda'],dc_data[,'NB_model'],type='l',ylim=c(0,max_y),col='red',lw=2)
+  else
+    cols <- c("red","grey","black")
+  
+  max_y <- min(max(EVPIr,na.rm = T), max_y)
+  yNaN <- rep(0,length(lambdas))
+  yNaN[which(is.nan(EVPIr))] <- 1
+  yInf <- rep(0,length(lambdas))
+  yInf[which(EVPIr>10)] <- 1
+  w <- rep(1/length(lambdas),length(lambdas))
+  plot(z, EVPIr, type='l', col=cols[1], ylim=c(0,max_y), xlab="Threshold", ylab="Relative EVPI")
+  par(new=T)
+  barplot(yNaN, w, border=cols[2], col=cols[2], xlim=c(0,1), ylim=c(0,max_y), xlab=NULL, ylab=NULL, space=0, axes=FALSE)
+  par(new=T)
+  barplot(yInf, w, border=cols[3], col=cols[3], xlim=c(0,1), ylim=c(0,max_y), xlab=NULL, ylab=NULL, space=0, axes=FALSE)
+  legend(0.8, max_y-1, legend=c("0/0",paste0(">",max_y)),col=c(cols[2],cols[3]), lty=c(1,1), lwd=c(10,10), border=NA)
 }
 
 
