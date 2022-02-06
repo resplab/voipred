@@ -1,14 +1,17 @@
 ---
 title: "Development EVPI tutorial"
 author: "Mohsen Sadatsafavi"
-date: "2/5/2022"
-output: 
+date: "February 06, 2022"
+output:
   html_document:
-    toc: true
+    toc: yes
     toc_depth: 3
-editor_options: 
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+editor_options:
   chunk_output_type: console
-  markdown: 
+  markdown:
     wrap: 72
 ---
 
