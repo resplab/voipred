@@ -1,14 +1,16 @@
 ---
-title: "Tutorial for VoIPred: Value of Information for risk prediciton models"
-output: rmarkdown::html_vignette
-
-vignette: >
-  %\VignetteIndexEntry{Tutorial for VoIPred}
-  %\VignetteEngine{knitr::rmarkdown}
-  \usepackage[utf8]{inputenc}
+title: "Different methods for EVPI calculations"
+author: "Mohsen Sadatsafavi"
+date: "February 06, 2022"
+output:
+  html_document
+editor_options:
+  chunk_output_type: console
+  markdown:
+    wrap: 72
 ---
 
-Last uppdate: January 22, 2022 
+Last uppdate: February 06, 2022 
 Creator: Mohsen Sadatsafavi 
 
 

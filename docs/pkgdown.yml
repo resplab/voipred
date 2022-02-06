@@ -2,7 +2,7 @@ pandoc: 2.11.4
 pkgdown: 2.0.2
 pkgdown_sha: ~
 articles:
+  devEVPI_methods: devEVPI_methods.html
   devEVPI_tutorial: devEVPI_tutorial.html
-  VoIPred_tutorial: VoIPred_tutorial.html
-last_built: 2022-02-06T21:28Z
+last_built: 2022-02-06T21:52Z
 

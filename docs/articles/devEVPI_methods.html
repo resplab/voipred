@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tutorial for VoIPred: Value of Information for risk prediciton models • voipred</title>
+<title>Different methods for EVPI calculations • voipred</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="Tutorial for VoIPred: Value of Information for risk prediciton models">
+<script src="../pkgdown.js"></script><meta property="og:title" content="Different methods for EVPI calculations">
 <meta property="og:description" content="voipred">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -50,10 +50,10 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/devEVPI_tutorial.html">Development EVPI tutorial</a>
+      <a href="../articles/devEVPI_methods.html">Different methods for EVPI calculations</a>
     </li>
     <li>
-      <a href="../articles/VoIPred_tutorial.html">Tutorial for VoIPred: Value of Information for risk prediciton models</a>
+      <a href="../articles/devEVPI_tutorial.html">Development EVPI tutorial</a>
     </li>
   </ul>
 </li>
@@ -71,17 +71,19 @@
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>Tutorial for VoIPred: Value of Information for risk prediciton models</h1>
+      <h1 data-toc-skip>Different methods for EVPI calculations</h1>
+                        <h4 data-toc-skip class="author">Mohsen Sadatsafavi</h4>
             
+            <h4 data-toc-skip class="date">February 06, 2022</h4>
       
       
-      <div class="hidden name"><code>VoIPred_tutorial.Rmd</code></div>
+      <div class="hidden name"><code>devEVPI_methods.Rmd</code></div>
 
     </div>
 
     
     
-<p>Last uppdate: January 22, 2022 Creator: Mohsen Sadatsafavi</p>
+<p>Last uppdate: February 06, 2022 Creator: Mohsen Sadatsafavi</p>
 <p>This vignette provides tutorial for Value of Information (VoI) analysis for risk prediction models. This document accompanies our paper “Uncertainty and the Value of Information in Risk Prediction Modeling - Medical Decision Making (2022)”</p>
 <p>In the main paper we provided stylized R code for the bootstrap-based approach to EVPI calculations. Here, we provide two alternative methods: likelihood-based and parameteric Bayesian (based on MCMC and Gibbs sampling). For completeless the original bootstrap-based code is also provided.</p>
 <p>Our sample dataset is the birth weight data in the MASS package. This dataset contains 189 rows. The outcome (response variable) is the presence of low birth weight (‘low’) and for simplicity we work with two predictors: ‘age’ (mother’s age in years) and ‘lwt’ (mother’s weight in pounds at last menstrual period).</p>
@@ -116,11 +118,11 @@
 <span class="va">EVPI</span> <span class="op">&lt;-</span> <span class="va">ENBmax</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBmodel</span>,<span class="va">ENBall</span><span class="op">)</span>
 <span class="va">EVPIr</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">ENBmax</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBall</span><span class="op">)</span><span class="op">)</span><span class="op">/</span><span class="op">(</span><span class="va">ENBmodel</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBall</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>Which results in the following values:</p>
-<p>NB of treating all: 0.1376388</p>
-<p>NB of the proposed model: 0.1453942</p>
-<p>NB of the correct model: 0.1494162</p>
-<p>EVPI: 0.004022</p>
-<p>Relative EVPI: 1.518604</p>
+<p>NB of treating all: 0.1358638</p>
+<p>NB of the proposed model: 0.1430334</p>
+<p>NB of the correct model: 0.147064</p>
+<p>EVPI: 0.0040306</p>
+<p>Relative EVPI: 1.5621751</p>
 </div>
 <div class="section level2">
 <h2 id="fully-parametric-bayesian-approach">2.Fully parametric Bayesian approach<a class="anchor" aria-label="anchor" href="#fully-parametric-bayesian-approach"></a>
@@ -213,11 +215,11 @@
 <span class="va">EVPI</span><span class="op">&lt;-</span><span class="va">ENBmax</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBmodel</span>,<span class="va">ENBall</span><span class="op">)</span>
 <span class="va">EVPIr</span><span class="op">&lt;-</span><span class="op">(</span><span class="va">ENBmax</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBall</span><span class="op">)</span><span class="op">)</span><span class="op">/</span><span class="op">(</span><span class="va">ENBmodel</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBall</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>Which results in the following values:</p>
-<p>NB of treating all: 0.1431587</p>
-<p>NB of the proposed model: 0.1492923</p>
-<p>NB of the correct model: 0.1532541</p>
-<p>EVPI: 0.0039618</p>
-<p>Relative EVPI: 1.6459147</p>
+<p>NB of treating all: 0.1440936</p>
+<p>NB of the proposed model: 0.1501483</p>
+<p>NB of the correct model: 0.1541035</p>
+<p>EVPI: 0.0039552</p>
+<p>Relative EVPI: 1.6532535</p>
 </div>
   </div>
 
