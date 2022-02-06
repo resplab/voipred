@@ -28,7 +28,7 @@ library(ggplot2)
 set.seed(3344)
 ```
 
-### Introduction
+# Introduction
 
 This tutorial is a step-by-step calculation of the Expected Value of
 Perfect Information (EVPI) for risk prediction models.
@@ -66,7 +66,7 @@ estimates the distance,
 
 We progress through a simple case study
 
-### The development data
+## The development data
 
 To keep things simple, we use the small and simple data set birthwt from
 the MASS package. These data are for the new born and were collected at
@@ -112,7 +112,7 @@ This is how the data looks like:
 head(dev_data)
 ```
 
-### The 'proposed' model
+## The 'proposed' model
 
 To proceed, we fit an uncomplicated logistic regression model:
 
@@ -137,7 +137,7 @@ dev_data$pi <- predict(model,type='response')
 head(dev_data)
 ```
 
-### The net benefit of the proposed model
+## The net benefit of the proposed model
 
 Our metric of interest is Net Benefit (NB). At risk threshold of z, it
 is calculated as
@@ -158,7 +158,7 @@ NB_model <- mean((dev_data$pi>z)*(dev_data$Y-(1-dev_data$Y)*z/(1-z)))
 print(NB_model)
 ```
 
-### Uncertainty in predicted risks from the proposed model
+## Uncertainty in predicted risks from the proposed model
 
 Because the sample size is finite (and in fact quite small in this
 example), regression coefficients are uncertain. Our model is therefore
@@ -174,7 +174,7 @@ risks.
 The EVPI captures the expected loss in NB because of not knowing the
 correct risks.
 
-### NB calculations if the correct model is known
+## NB calculations if the correct model is known
 
 Imagine for the moment, we know the truth: that the correct model
 associating our predictors of interest to the risk of the outcome if of
@@ -216,7 +216,7 @@ NB_all <- mean((dev_data$p - (1-dev_data$p)*z/(1-z)))
 print(NB_all)
 ```
 
-### The highest NB: the NB of the correct model itself ($NB_{max}$)
+## The highest NB: the NB of the correct model itself ($NB_{max}$)
 
 If we know the correct model, then why even using our proposed model? We
 can calculate the NB of the correct model
@@ -230,7 +230,7 @@ NB_max <- mean((dev_data$p>z)*(dev_data$p - (1-dev_data$p)*z/(1-z)))
 print(NB_max)
 ```
 
-### But we don't know the correct model (but a Bayesian perspective helps)
+## But we don't know the correct model (but a Bayesian perspective helps)
 
 The above calculations was based on the complete knowledge about the
 correct model. However, we do now know the correct model! How should we
@@ -307,7 +307,7 @@ ENB_all <- mean(NB_all)
 ENB_max <- mean(NB_max)
 ```
 
-### The value of knowing the truth: EVPI
+## The value of knowing the truth: EVPI
 
 Having the three quantities at hand, we can know estimate how much
 knowing the correct model will get us extra NB.
@@ -343,7 +343,7 @@ print(EVPI)
 So, with knowing the truth we expect to gain `r EVPI` higher expected NB
 compared with the proposed model at the chosen threshold of `r z`.
 
-### Putting things together: R code for EVPI calculation
+## Putting things together: R code for EVPI calculation
 
 The code below consolidates everything, and also does the calculations
 for a range of threshold:
@@ -379,7 +379,7 @@ EVPI <- NB_max-pmax(0,NB_model,NB_all)
 plot(z, EVPI, xlab="Threshold", ylab="EVPI", type='l', col='red')
 ```
 
-### How to interpret EVPI?
+## How to interpret EVPI?
 
 EVPI is in the true positive scale. This is rather context-specific. We
 think EVPI can best be interpreted compared to the NB that the proposed
@@ -472,7 +472,7 @@ barplot(yInf, w, border='black', col='black', xlim=c(0,1), ylim=c(0,max_y), xlab
 legend(0.8,9, legend=c("0/0",">10"),col=c("grey","black"), lty=c(1,1), lwd=c(10,10), border=NA)
 ```
 
-### Using the voipred package
+## Using the voipred package
 
 The voipred packages encapsulates much of what we have done. Its latest
 experimental version can be installed via github as
