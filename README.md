@@ -1,3 +1,3 @@
 # Table of Contents
 
--   [Alternative (likelihood-based and parametric Bayesian) methods of EVPI calculations](file:///C:/Users/msafavi/Static/RPackages/voipred/docs/articles/VoIPred_tutorial.html)
+-   [Alternative (likelihood-based and parametric Bayesian) methods of EVPI calculations](https://resplab.github.io/voipred/articles/VoIPred_tutorial.html)
