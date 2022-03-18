@@ -1,7 +1,7 @@
 ---
 title: "Development EVPI tutorial"
 author: "Mohsen Sadatsafavi"
-date: "February 06, 2022"
+date: "March 18, 2022 "
 output:
   html_document:
     toc: yes
@@ -52,13 +52,12 @@ So, this method is appicable when:
 
 -   As a result of above, we know that the NB we estimate for our model,
     as well as for the 'default' decisions of treating no one and
-    treating all, can e incorrect, and as such we might make incorrect
+    treating all, can be incorrect, and as such we might make incorrect
     conclusions about if our proposed model is better than the default
     decisions at threshold of interest.
 
 -   We calculate EVPI as the expected distance in net benefit (NB)
-    between a proposed model (that we just developed using some
-    development data). We can then judge the value of EVPI to decide
+    between our proposed model and the correct model. We can then judge the value of EVPI to decide
 
     -   Whether a model is good enough and should proceed to next stage
     -   Whether it is not good and should be abandoned
