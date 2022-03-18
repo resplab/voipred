@@ -118,21 +118,19 @@
 <span class="va">EVPI</span> <span class="op">&lt;-</span> <span class="va">ENBmax</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBmodel</span>,<span class="va">ENBall</span><span class="op">)</span>
 <span class="va">EVPIr</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">ENBmax</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBall</span><span class="op">)</span><span class="op">)</span><span class="op">/</span><span class="op">(</span><span class="va">ENBmodel</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBall</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>Which results in the following values:</p>
-<p>NB of treating all: 0.1358638</p>
-<p>NB of the proposed model: 0.1430334</p>
-<p>NB of the correct model: 0.147064</p>
-<p>EVPI: 0.0040306</p>
-<p>Relative EVPI: 1.5621751</p>
+<p>NB of treating all: 0.1418954</p>
+<p>NB of the proposed model: 0.1491715</p>
+<p>NB of the correct model: 0.153184</p>
+<p>EVPI: 0.0040125</p>
+<p>Relative EVPI: 1.5514705</p>
 </div>
 <div class="section level2">
 <h2 id="fully-parametric-bayesian-approach">2.Fully parametric Bayesian approach<a class="anchor" aria-label="anchor" href="#fully-parametric-bayesian-approach"></a>
 </h2>
 <p>This is a fully Bayesian estimation approach for EVPI. This approach requires specifying priors for regression coefficients (which here we choose to be non-informative). The core Gibbs sampler (bugs_model) is written for WinBUGS/OpenBUGS and requires a local instance of OpenBUGS and the R package R2OpenBUGS.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">R2OpenBUGS</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## Warning: package 'R2OpenBUGS' was built under R version 4.1.2</span></code></pre>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://www.stats.ox.ac.uk/pub/MASS4/" class="external-link">MASS</a></span><span class="op">)</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">R2OpenBUGS</span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://www.stats.ox.ac.uk/pub/MASS4/" class="external-link">MASS</a></span><span class="op">)</span>
 
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">birthwt</span><span class="op">)</span> 
 
@@ -183,7 +181,7 @@
 <h2 id="likelihood-based-approach">3.Likelihood-based approach<a class="anchor" aria-label="anchor" href="#likelihood-based-approach"></a>
 </h2>
 <p>This is very similar to the bootstrap-based approach, only that instead of sampling true risks (p) from fitting new models in each bootstrap sample, we generate such draws from the joint multivariate distribution for the regression coefficients. We approximate this distribution to be multivariate normal with the vector of mean and covariance matrix taken from, respectively, the maximum-likelihood estimates and covariance matrix of coefficients. The R code requires the mvtnorm package for sampling from multivariate normal distribution.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://www.stats.ox.ac.uk/pub/MASS4/" class="external-link">MASS</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://mvtnorm.R-forge.R-project.org" class="external-link">mvtnorm</a></span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">birthwt</span><span class="op">)</span> 
@@ -215,11 +213,11 @@
 <span class="va">EVPI</span><span class="op">&lt;-</span><span class="va">ENBmax</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBmodel</span>,<span class="va">ENBall</span><span class="op">)</span>
 <span class="va">EVPIr</span><span class="op">&lt;-</span><span class="op">(</span><span class="va">ENBmax</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBall</span><span class="op">)</span><span class="op">)</span><span class="op">/</span><span class="op">(</span><span class="va">ENBmodel</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBall</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>Which results in the following values:</p>
-<p>NB of treating all: 0.1440936</p>
-<p>NB of the proposed model: 0.1501483</p>
-<p>NB of the correct model: 0.1541035</p>
-<p>EVPI: 0.0039552</p>
-<p>Relative EVPI: 1.6532535</p>
+<p>NB of treating all: 0.1442711</p>
+<p>NB of the proposed model: 0.1503047</p>
+<p>NB of the correct model: 0.1542442</p>
+<p>EVPI: 0.0039395</p>
+<p>Relative EVPI: 1.6529211</p>
 </div>
   </div>
 

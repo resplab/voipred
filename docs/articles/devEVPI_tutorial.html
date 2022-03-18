@@ -91,18 +91,19 @@
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>This tutorial is a step-by-step calculation of the Expected Value of Perfect Information (EVPI) for risk prediction models.</p>
-<p>The EVPI developed in this document is the development EVPI: it estimates the distance,</p>
+<p>This tutorial is a step-by-step calculation of the Expected Value of Perfect Information (EVPI) for risk prediction models, as introduced in <a href="https://journals.sagepub.com/doi/10.1177/0272989X06295361?url_ver=Z39.88-2003&amp;rfr_id=ori:rid:crossref.org&amp;rfr_dat=cr_pub%20%200pubmed" class="external-link">our 2022 paper in Medical Decision Makiing</a></p>
+<p>Due to the finite development sample, there is always uncertainty around predictions from our models. We usually present such uncertainty as 95%CI on AUC, error bars on calibration plot, etc. In our paper we argue that this uncertainty can be approached using decision theory. The reasoning is simple: There is one ‘correct’ model out there for the conditional mean of outcome given predictor values. Let’s measure the expected distance between our model and this Utopian model. The distance is expressed on the arguably most relevant scale: net benefit.</p>
+<p>So, this method is appicable when:</p>
 <ul>
 <li><p>We have data of n individuals with a binary outcome (Y) and a set of predictors.</p></li>
-<li><p>We have developed a risk prediction model for Y using these data</p></li>
-<li><p>We know that because of the finite sample size, the regression coefficients of our model are uncertain</p></li>
+<li><p>We have developed a risk prediction model for Y using these data.</p></li>
+<li><p>We know that because of the finite sample size, the regression coefficients of our model are uncertain.</p></li>
 <li><p>We are making our decision to use this model or not based on net benefit (NB) calculations, as defined in the classic paper by <a href="https://journals.sagepub.com/doi/10.1177/0272989X06295361?url_ver=Z39.88-2003&amp;rfr_id=ori:rid:crossref.org&amp;rfr_dat=cr_pub%20%200pubmed" class="external-link">Vickers and Elkin (Med Decis Making. 2006;26(6):565-574. doi:10.1177/0272989X06295361)</a>.</p></li>
 <li><p>As a result of above, we know that the NB we estimate for our model, as well as for the ‘default’ decisions of treating no one and treating all, can e incorrect, and as such we might make incorrect conclusions about if our proposed model is better than the default decisions at threshold of interest.</p></li>
 <li>
-<p>We calculate EVPI as the expected distance in net benefit (NB) between a proposed model (that we just developed using some development data). We can then judge the value of EVPI todecide</p>
+<p>We calculate EVPI as the expected distance in net benefit (NB) between a proposed model (that we just developed using some development data). We can then judge the value of EVPI to decide</p>
 <ul>
-<li>Whether a model is goof enough and should proceed to next stage</li>
+<li>Whether a model is good enough and should proceed to next stage</li>
 <li>Whether it is not good and should be abandoned</li>
 <li>Whether we cannoe arrive at a conclusion and need more development sample</li>
 </ul>
@@ -131,7 +132,7 @@
 
 <span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">dev_data</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="co">#n is the number of observations.</span>
 <span class="va">z</span> <span class="op">&lt;-</span> <span class="fl">0.2</span> <span class="co">#this is the risk threshold.</span></code></pre></div>
-<p>This is how the data looks like:</p>
+<p>This is how the data look like:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">dev_data</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">##    age lwt smoke Y</span>
@@ -162,7 +163,7 @@
 <span class="co">## Degrees of Freedom: 188 Total (i.e. Null);  185 Residual</span>
 <span class="co">## Null Deviance:       234.7 </span>
 <span class="co">## Residual Deviance: 222.9     AIC: 230.9</span></code></pre>
-<p>Let’s go ahead and calculate the predicted risks (π , and in R code we write them is ‘pi’) for each patients:</p>
+<p>Let’s go ahead and calculate the predicted risks (‘π’ , and in R code we write them as ‘pi’) for each patients:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">dev_data</span><span class="op">$</span><span class="va">pi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">model</span>,type<span class="op">=</span><span class="st">'response'</span><span class="op">)</span></code></pre></div>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
@@ -194,14 +195,13 @@
 <div class="section level3">
 <h3 id="uncertainty-in-predicted-risks-from-the-proposed-model">Uncertainty in predicted risks from the proposed model<a class="anchor" aria-label="anchor" href="#uncertainty-in-predicted-risks-from-the-proposed-model"></a>
 </h3>
-<p>Because the sample size is finite (and in fact quite small in this example), regression coefficients are uncertain. Our model is therefore likely different from the ‘correct model’; that is, the model with correct coefficients.</p>
-<p>Because of this discrepancy, the use of the proposed model will be sub-optimal compared with the use of the correct model. As such, making decisions about patient management based on predicted risks from the proposed model can be different from the decision based on the correct risks.</p>
-<p>The EVPI captures the expected loss in NB because of not knowing the correct risks.</p>
+<p>Because the sample size is finite (and in fact quite small in this example), regression coefficients are uncertain. Our model therefore is likely different from the ‘correct model’; that is, the model with correct coefficients.</p>
+<p>The EVPI captures the expected loss in NB because we are using our proposed model as opposed to the correct model.</p>
 </div>
 <div class="section level3">
 <h3 id="nb-calculations-if-the-correct-model-is-known">NB calculations if the correct model is known<a class="anchor" aria-label="anchor" href="#nb-calculations-if-the-correct-model-is-known"></a>
 </h3>
-<p>Imagine for the moment, we know the truth: that the correct model associating our predictors of interest to the risk of the outcome if of the form</p>
+<p>Imagine for the moment, we know the truth: that the correct model associating our predictors of interest to the risk of the outcome is of the form</p>
 <p><span class="math inline">\(logit(P(Y))= 1 - 0.03899*age - 0.01*lwt + 0.5*smoke\)</span></p>
 <p>Because we know the truth, we can calculate the actual risk of outcome, denoted by p, for each observation in the data set:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
@@ -216,9 +216,9 @@
 <span class="co">## 88  21 108     1 0 0.4773007 0.4016031</span>
 <span class="co">## 89  18 107     1 0 0.5095645 0.4324603</span>
 <span class="co">## 91  21 124     0 0 0.2777118 0.2575408</span></code></pre>
-<p>Now that we have the correct risks, we can calculate the net benefit directly using p:</p>
+<p>Now that we have the correct risks, we can calculate the NB directly using p:</p>
 <p><span class="math inline">\(NB(z)=\sum_{i=1}^n I(π_i&gt;z)(p_i-(1-p_i)\frac{z}{1-z})\)</span></p>
-<p>This is very similar to the original euqation for NB, only that we have replaced Y with correct probabilities. Implementing this in R, we have</p>
+<p>This is very similar to the original equation for NB, only that we have replaced Y with correct probabilities. Implementing this in R, we have</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">NB_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">(</span><span class="va">dev_data</span><span class="op">$</span><span class="va">pi</span><span class="op">&gt;</span><span class="va">z</span><span class="op">)</span><span class="op">*</span><span class="op">(</span><span class="va">dev_data</span><span class="op">$</span><span class="va">p</span> <span class="op">-</span> <span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="va">dev_data</span><span class="op">$</span><span class="va">p</span><span class="op">)</span><span class="op">*</span><span class="va">z</span><span class="op">/</span><span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="va">z</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
 
@@ -231,24 +231,24 @@
 <pre><code><span class="co">## [1] 0.09654724</span></code></pre>
 </div>
 <div class="section level3">
-<h3 id="the-highest-nb-the-nb-of-the-correct-model-itself-nb_max">The highest NB: the NB of the correct model itself (<span class="math inline">\(NB_{max}\)</span>)<a class="anchor" aria-label="anchor" href="#the-highest-nb-the-nb-of-the-correct-model-itself-nb_max"></a>
+<h3 id="the-highest-possible-nb-the-nb-of-the-correct-model-itself-nb_max">The highest possible NB: the NB of the correct model itself (<span class="math inline">\(NB_{max}\)</span>)<a class="anchor" aria-label="anchor" href="#the-highest-possible-nb-the-nb-of-the-correct-model-itself-nb_max"></a>
 </h3>
-<p>If we know the correct model, then why even using our proposed model? We can calculate the NB of the correct model</p>
+<p>If we know the correct model, then why not using it? We can calculate the NB of the correct model</p>
 <p><span class="math inline">\(NB_{max}(z)= \sum_{i=1}^n I(p_i&gt;z)(p_i-(1-p_i)\frac{z}{1-z})\)</span></p>
-<p>Which is easy to calculate:</p>
+<p>Which is easy to calculate in R:</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">NB_max</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">(</span><span class="va">dev_data</span><span class="op">$</span><span class="va">p</span><span class="op">&gt;</span><span class="va">z</span><span class="op">)</span><span class="op">*</span><span class="op">(</span><span class="va">dev_data</span><span class="op">$</span><span class="va">p</span> <span class="op">-</span> <span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="va">dev_data</span><span class="op">$</span><span class="va">p</span><span class="op">)</span><span class="op">*</span><span class="va">z</span><span class="op">/</span><span class="op">(</span><span class="fl">1</span><span class="op">-</span><span class="va">z</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">NB_max</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## [1] 0.1076502</span></code></pre>
 </div>
 <div class="section level3">
-<h3 id="but-we-dont-know-the-correct-model-but-a-bayesian-perspective-helps">But we don’t know the correct model (but a Bayesian perspective helps)<a class="anchor" aria-label="anchor" href="#but-we-dont-know-the-correct-model-but-a-bayesian-perspective-helps"></a>
+<h3 id="we-dont-know-the-correct-model-but-a-bayesian-perspective-helps">We don’t know the correct model, but a Bayesian perspective helps<a class="anchor" aria-label="anchor" href="#we-dont-know-the-correct-model-but-a-bayesian-perspective-helps"></a>
 </h3>
-<p>The above calculations was based on the complete knowledge about the correct model. However, we do now know the correct model! How should we proceed?</p>
+<p>The above calculations was based on the knowing the correct model. However, we do not know the correct model! How should we proceed?</p>
 <p>Because we have the development sample, we can infer about the parameters of the correct model. This requires a Bayesian approach towards NB calculations. The uncertainty in the regression coefficients can be seen as a probability distribution around the parameters of the correct model.</p>
 <p>Sampling from the distribution of the regression coefficients for the correct model can be done in many different ways. It can be fully Bayesian, likelihood-based, or based on bootstrapping (as discussed in the paper).</p>
-<p>Bootstrap seems a good choice because of its flexibility. We bootstrap the development data set, and fit a new model every time. We make predictions from this model to the original data set. These predicted risks can be taken as samples from the predicted risks of the correct model.</p>
-<p>The algorithm looks like this: 1. Obtain a bootstrap sample from the development data set. 2. Fit the model again in this sample. 3. Use this model to make predictions in the original sample. 4. Calculate the NBs of the proposed model, NB of treating all, and NB of using the correct model (as explained above). Store the results in memory 5. Repeat steps 1-4 many times.</p>
+<p>Bootstrap seems a good choice because of its flexibility. We bootstrap the development data set many times, and fit a new model every time. We make predictions from this model and apply it to the original data set. These predicted risks can be taken as samples from the predicted risks of the correct model.</p>
+<p>The algorithm looks like this: 1. Obtain a bootstrap sample from the development data set. 2. Fit the model in this sample. 3. Use this model to make predictions in the original sample. 4. Calculate the NBs of the proposed model, NB of treating all, and NB of using the correct model (as explained above). Store the results in memory 5. Repeat steps 1-4 many times.</p>
 <p>This is how it looks in R:</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co">#Vectors that will keep the results </span>
@@ -256,7 +256,7 @@
 
 <span class="kw">for</span><span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">1000</span><span class="op">)</span>
 <span class="op">{</span>
-  <span class="co">#Bootsrapping the development sample</span>
+  <span class="co">#Bootstrapping the development sample</span>
   <span class="va">bs_data</span> <span class="op">&lt;-</span> <span class="va">dev_data</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="va">n</span>, size <span class="op">=</span> <span class="va">n</span>, replace <span class="op">=</span> <span class="cn">T</span><span class="op">)</span>,<span class="op">]</span>
   <span class="co">#Fitting the model in this sample. </span>
   <span class="va">bs_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html" class="external-link">glm</a></span><span class="op">(</span><span class="va">Y</span> <span class="op">~</span> <span class="va">age</span> <span class="op">+</span> <span class="va">lwt</span> <span class="op">+</span> <span class="va">smoke</span>, data<span class="op">=</span><span class="va">bs_data</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span>link<span class="op">=</span><span class="st">"logit"</span><span class="op">)</span><span class="op">)</span>
@@ -280,13 +280,14 @@
 </h3>
 <p>Having the three quantities at hand, we can know estimate how much knowing the correct model will get us extra NB.</p>
 <p>With current information, the best NB we can get is to pick the decision with the highest expected NB</p>
-<p><code>$NB_\text{current information}=max\{\text{E}NB_{model}, \text{E}NB_{all}, 0\}$</code></p>
+<p><span class="math inline">\(NB_\text{current information}=max\{0, \text{E}NB_{model}, \text{E}NB_{all}\}\)</span></p>
 <p>Note that 0 is the NB of not treating anyone.</p>
-<p>If we had access to the correct model, we would have used it instead of the proposed model. So the expected gain would be <span class="math inline">\(NB_\text{perfect information}=max\{\text{E}NB_{max}, \text{E}NB_{all}, 0\} = \text{E}NB_{max}\)</span></p>
+<p>If we had access to the correct model, we would have used it instead of the proposed model. So the expected gain would be</p>
+<p><span class="math inline">\(NB_\text{perfect information}=max\{\text{E}NB_{max}, \text{E}NB_{all}, 0\} = \text{E}NB_{max}\)</span></p>
 <p>*Note that <span class="math inline">\(\text{E}NB_{max}\)</span> is guaranteed to be more than the other quantities so the maximization is redundant.</p>
-<p>The difference between the expected NB under perfect and current information is the Expected Value of Perfect Information:</p>
+<p>The difference between the expected NB under perfect and current information is the Expected Value of Perfect Information (EVPI):</p>
 <p><span class="math inline">\(EVPI=\text{E}NB_{max}-max\{\text{E}NB_{model}, \text{E}NB_{all}, 0\}\)</span></p>
-<p>In R, it is just too easy to calculate EVPI based on the quantities we have calculated so far:</p>
+<p>In R, it is so easy to calculate EVPI based on the quantities we have calculated so far:</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">EVPI</span> <span class="op">&lt;-</span> <span class="va">ENB_max</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENB_model</span>,<span class="va">ENB_all</span><span class="op">)</span>
 
@@ -297,7 +298,7 @@
 <div class="section level3">
 <h3 id="putting-things-together-r-code-for-evpi-calculation">Putting things together: R code for EVPI calculation<a class="anchor" aria-label="anchor" href="#putting-things-together-r-code-for-evpi-calculation"></a>
 </h3>
-<p>The code below consolidates everything, and also does the calculations for a range of threshold:</p>
+<p>The code below consolidates everything, and also does the calculations for a range of thresholds:</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">dev_data</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>
 <span class="va">z</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">99</span><span class="op">)</span><span class="op">/</span><span class="fl">100</span>
@@ -330,11 +331,15 @@
 <p><img src="devEVPI_tutorial_files/figure-html/unnamed-chunk-17-1.png" width="700"></p>
 </div>
 <div class="section level3">
-<h3 id="how-to-interpret-evpi">How to interpret EVPI?<a class="anchor" aria-label="anchor" href="#how-to-interpret-evpi"></a>
+<h3 id="incremental-nb-curve">Incremental NB curve<a class="anchor" aria-label="anchor" href="#incremental-nb-curve"></a>
 </h3>
-<p>EVPI is in the true positive scale. This is rather context-specific. We think EVPI can best be interpreted compared to the NB that the proposed model provides. To this end, we propose Incremental NB and Relative EVPI.</p>
-<p>To proceed, we note that we have three Nb entities to compare: - NB of the best decision without any risk stratification: <span class="math inline">\(max(0,\text{E}NB_{all})\)</span> - NB of the best decision with the proposed model: <span class="math inline">\(max(0,\text{E}NB_{all},\text{E}NB_{model})\)</span> - NB of the best decision with the correct model: <span class="math inline">\(NB_{max}\)</span></p>
-<p>So, the Incremental Benefit (ΔNB) with current information is</p>
+<p>We note that we have three NB entities to compare:</p>
+<ul>
+<li><p>NB of the best decision without any risk stratification: <span class="math inline">\(max(0,\text{E}NB_{all})\)</span></p></li>
+<li><p>NB of the best decision with the proposed model: <span class="math inline">\(max(0,\text{E}NB_{all},\text{E}NB_{model})\)</span></p></li>
+<li><p>NB of the best decision with the correct model: <span class="math inline">\(NB_{max}\)</span></p></li>
+</ul>
+<p>So, the Incremental Benefit (INB) with current information is</p>
 <p><span class="math inline">\(\text{E}INB_\text{Current Information}=max(0,\text{E}NB_{all},\text{E}NB_{model}) - max(0,\text{E}NB_{all})\)</span></p>
 <p>Where is with perfect information it is:</p>
 <p><span class="math inline">\(\text{E}INB_\text{Perfect Information}=NB_{max}-max(0,\text{E}NB_{all})\)</span></p>
@@ -348,20 +353,24 @@
 <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">z</span>,<span class="va">NB_max</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmax</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">NB_all</span><span class="op">)</span>,type<span class="op">=</span><span class="st">'l'</span>, col<span class="op">=</span><span class="st">'red'</span>, ylim<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">INB_current</span>,<span class="va">INB_perfect</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p><img src="devEVPI_tutorial_files/figure-html/unnamed-chunk-19-1.png" width="700"></p>
 <p>Which nicely shows the difference between the INB curves across the thresholds. This difference is the EVPI, and this graphs shows its extent compared with the gain in NB with the proposed model.</p>
-<p>As well, we suggest taking the ratio of the two, which we call Relative EVPI (EVPIr):</p>
+</div>
+<div class="section level3">
+<h3 id="relative-evpi">Relative EVPI<a class="anchor" aria-label="anchor" href="#relative-evpi"></a>
+</h3>
+<p>EVPI is in true positive units (which is context-specific). So it can be the most interpretaboe when compared with the NB that the proposed model provides. So, we suggest taking the ratio of the two, which we call Relative EVPI (EVPIr):</p>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">EVPIr</span> <span class="op">&lt;-</span> <span class="va">INB_perfect</span><span class="op">/</span><span class="va">INB_current</span></code></pre></div>
 <p>However, a simple plot of this graph might not be very informative (especially with small samples like ours):</p>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">z</span>, <span class="va">EVPIr</span>, type<span class="op">=</span><span class="st">'l'</span>, xlab<span class="op">=</span><span class="st">"Threshold"</span>, ylab<span class="op">=</span><span class="st">"Relative EVPI"</span><span class="op">)</span></code></pre></div>
 <p><img src="devEVPI_tutorial_files/figure-html/unnamed-chunk-21-1.png" width="700"></p>
-<p>This is indeed a messy, uninformative graph, and the reason is obvious in the INB graph: in many instances, the INB under current information, the denominator, is 0. If INB under perfect information is 0 (like around threshold value of XXX) we will get 0/0 NaN. If INB under perfect information is non-zero, with get +∞. These have two different meanings:</p>
+<p>This is indeed a messy, uninformative graph, and the reason is obvious in the INB graph: in many instances, the INB under current information, the denominator, is 0. If INB under perfect information is 0 we will get 0/0 NaN. If INB under perfect information is non-zero, with get +∞. These have two different meanings:</p>
 <ul>
-<li><p>An EVPIr of 0/0 means under perfect (and thus correct) information, the model is not expected to do better than the default decisions.</p></li>
+<li><p>An EVPIr of 0/0 means under perfect (and thus current) information, the model is not expected to do better than the default decisions. So, no need to do more studies and we should just abandon the model for this population.</p></li>
 <li><p>An EVPIr of +∞ means that while under current information the model is not expected to do better than default decisions, under perfect information it might! Thus the model is not good to go towards validation. But procuring more development sample and revising the model might be justified.</p></li>
 </ul>
-<p>The EVPIr graph can therefore be upgraded to accomodate these. We cap it on the Y-axis at 10 (to us, an EVPIr of &gt;10 has the same implications as an EVPIr=+∞). We also label the areas of the X-axis according to whether EVPIr is 0/0 or +∞.</p>
-<p>So we do a little processing to identify the areas where EVPIr is 0/0 versus +∞:</p>
+<p>The EVPIr graph can therefore be upgraded to accommodate these. We cap it on the Y-axis at 10 (to us, an EVPIr of &gt;10 has the same implications as an EVPIr=+∞). We also label the areas of the X-axis according to whether EVPIr is 0/0 or +∞.</p>
+<p>This requires a bit of processing for the graph:</p>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">max_y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">EVPIr</span>,na.rm <span class="op">=</span> <span class="cn">T</span><span class="op">)</span>,<span class="fl">10</span><span class="op">)</span>
 <span class="va">yNaN</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">z</span><span class="op">)</span><span class="op">)</span>
@@ -380,7 +389,7 @@
 <div class="section level3">
 <h3 id="using-the-voipred-package">Using the voipred package<a class="anchor" aria-label="anchor" href="#using-the-voipred-package"></a>
 </h3>
-<p>The voipred packages encapsulates much of what we have done. Its latest experimental version can be installed via github as</p>
+<p>The voipred packages encapsulates much of what we have done. Its latest experimental version can be installed via github as follows:</p>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/remote-reexports.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"resplab/voipred"</span><span class="op">)</span></code></pre></div>
 <p>Once installed…</p>
