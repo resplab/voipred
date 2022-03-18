@@ -83,7 +83,7 @@
 
     
     
-<p>Last uppdate: February 06, 2022 Creator: Mohsen Sadatsafavi</p>
+<p>Last update: February 06, 2022 Creator: Mohsen Sadatsafavi</p>
 <p>This vignette provides tutorial for Value of Information (VoI) analysis for risk prediction models. This document accompanies our paper “Uncertainty and the Value of Information in Risk Prediction Modeling - Medical Decision Making (2022)”</p>
 <p>In the main paper we provided stylized R code for the bootstrap-based approach to EVPI calculations. Here, we provide two alternative methods: likelihood-based and parameteric Bayesian (based on MCMC and Gibbs sampling). For completeless the original bootstrap-based code is also provided.</p>
 <p>Our sample dataset is the birth weight data in the MASS package. This dataset contains 189 rows. The outcome (response variable) is the presence of low birth weight (‘low’) and for simplicity we work with two predictors: ‘age’ (mother’s age in years) and ‘lwt’ (mother’s weight in pounds at last menstrual period).</p>
@@ -118,11 +118,11 @@
 <span class="va">EVPI</span> <span class="op">&lt;-</span> <span class="va">ENBmax</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBmodel</span>,<span class="va">ENBall</span><span class="op">)</span>
 <span class="va">EVPIr</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">ENBmax</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBall</span><span class="op">)</span><span class="op">)</span><span class="op">/</span><span class="op">(</span><span class="va">ENBmodel</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBall</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>Which results in the following values:</p>
-<p>NB of treating all: 0.1418954</p>
-<p>NB of the proposed model: 0.1491715</p>
-<p>NB of the correct model: 0.153184</p>
-<p>EVPI: 0.0040125</p>
-<p>Relative EVPI: 1.5514705</p>
+<p>NB of treating all: 0.1405937</p>
+<p>NB of the proposed model: 0.1478032</p>
+<p>NB of the correct model: 0.1519283</p>
+<p>EVPI: 0.0041252</p>
+<p>Relative EVPI: 1.5721876</p>
 </div>
 <div class="section level2">
 <h2 id="fully-parametric-bayesian-approach">2.Fully parametric Bayesian approach<a class="anchor" aria-label="anchor" href="#fully-parametric-bayesian-approach"></a>
@@ -213,11 +213,11 @@
 <span class="va">EVPI</span><span class="op">&lt;-</span><span class="va">ENBmax</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBmodel</span>,<span class="va">ENBall</span><span class="op">)</span>
 <span class="va">EVPIr</span><span class="op">&lt;-</span><span class="op">(</span><span class="va">ENBmax</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBall</span><span class="op">)</span><span class="op">)</span><span class="op">/</span><span class="op">(</span><span class="va">ENBmodel</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENBall</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p>Which results in the following values:</p>
-<p>NB of treating all: 0.1442711</p>
-<p>NB of the proposed model: 0.1503047</p>
-<p>NB of the correct model: 0.1542442</p>
-<p>EVPI: 0.0039395</p>
-<p>Relative EVPI: 1.6529211</p>
+<p>NB of treating all: 0.1433099</p>
+<p>NB of the proposed model: 0.1494779</p>
+<p>NB of the correct model: 0.1534409</p>
+<p>EVPI: 0.003963</p>
+<p>Relative EVPI: 1.6425179</p>
 </div>
   </div>
 

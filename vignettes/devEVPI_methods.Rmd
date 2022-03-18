@@ -10,7 +10,7 @@ editor_options:
     wrap: 72
 ---
 
-Last uppdate: February 06, 2022 
+Last update: February 06, 2022 
 Creator: Mohsen Sadatsafavi 
 
 
