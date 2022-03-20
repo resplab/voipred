@@ -273,7 +273,16 @@
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">ENB_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">NB_model</span><span class="op">)</span>
 <span class="va">ENB_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">NB_all</span><span class="op">)</span>
-<span class="va">ENB_max</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">NB_max</span><span class="op">)</span></code></pre></div>
+<span class="va">ENB_max</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">NB_max</span><span class="op">)</span>
+
+<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">ENB_model</span><span class="op">)</span></code></pre></div>
+<pre><code><span class="co">## [1] 0.1495459</span></code></pre>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">ENB_all</span><span class="op">)</span></code></pre></div>
+<pre><code><span class="co">## [1] 0.140276</span></code></pre>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">ENB_max</span><span class="op">)</span></code></pre></div>
+<pre><code><span class="co">## [1] 0.1545469</span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="the-value-of-knowing-the-truth-evpi">The value of knowing the truth: EVPI<a class="anchor" aria-label="anchor" href="#the-value-of-knowing-the-truth-evpi"></a>
@@ -288,7 +297,7 @@
 <p>The difference between the expected NB under perfect and current information is the Expected Value of Perfect Information (EVPI):</p>
 <p><span class="math inline">\(EVPI=\text{E}NB_{max}-max\{\text{E}NB_{model}, \text{E}NB_{all}, 0\}\)</span></p>
 <p>In R, it is so easy to calculate EVPI based on the quantities we have calculated so far:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">EVPI</span> <span class="op">&lt;-</span> <span class="va">ENB_max</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">ENB_model</span>,<span class="va">ENB_all</span><span class="op">)</span>
 
 <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">EVPI</span><span class="op">)</span></code></pre></div>
@@ -299,7 +308,7 @@
 <h3 id="putting-things-together-r-code-for-evpi-calculation">Putting things together: R code for EVPI calculation<a class="anchor" aria-label="anchor" href="#putting-things-together-r-code-for-evpi-calculation"></a>
 </h3>
 <p>The code below consolidates everything, and also does the calculations for a range of thresholds:</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">dev_data</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>
 <span class="va">z</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">99</span><span class="op">)</span><span class="op">/</span><span class="fl">100</span>
 <span class="va">n_sim</span> <span class="op">&lt;-</span> <span class="fl">1000</span>
@@ -344,11 +353,11 @@
 <p>Where is with perfect information it is:</p>
 <p><span class="math inline">\(\text{E}INB_\text{Perfect Information}=NB_{max}-max(0,\text{E}NB_{all})\)</span></p>
 <p>Which can be calculated as</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">INB_current</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmax</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">NB_model</span>,<span class="va">NB_all</span><span class="op">)</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmax</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">NB_all</span><span class="op">)</span>
 <span class="va">INB_perfect</span> <span class="op">&lt;-</span> <span class="va">NB_max</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmax</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">NB_all</span><span class="op">)</span></code></pre></div>
 <p>Our suggestion for the graphical presentation is an overlay of the two INB plots:</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">z</span>, <span class="va">INB_current</span>, type<span class="op">=</span><span class="st">'l'</span>, col<span class="op">=</span><span class="st">'black'</span>, ylim<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">INB_current</span>,<span class="va">INB_perfect</span><span class="op">)</span><span class="op">)</span>, xlab<span class="op">=</span><span class="st">"Threshold"</span>, ylab<span class="op">=</span><span class="st">"Incremental NB"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">z</span>,<span class="va">NB_max</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmax</a></span><span class="op">(</span><span class="fl">0</span>,<span class="va">NB_all</span><span class="op">)</span>,type<span class="op">=</span><span class="st">'l'</span>, col<span class="op">=</span><span class="st">'red'</span>, ylim<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">INB_current</span>,<span class="va">INB_perfect</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <p><img src="devEVPI_tutorial_files/figure-html/unnamed-chunk-19-1.png" width="700"></p>
@@ -358,10 +367,10 @@
 <h3 id="relative-evpi">Relative EVPI<a class="anchor" aria-label="anchor" href="#relative-evpi"></a>
 </h3>
 <p>EVPI is in true positive units (which is context-specific). So it can be the most interpretaboe when compared with the NB that the proposed model provides. So, we suggest taking the ratio of the two, which we call Relative EVPI (EVPIr):</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">EVPIr</span> <span class="op">&lt;-</span> <span class="va">INB_perfect</span><span class="op">/</span><span class="va">INB_current</span></code></pre></div>
 <p>However, a simple plot of this graph might not be very informative (especially with small samples like ours):</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">z</span>, <span class="va">EVPIr</span>, type<span class="op">=</span><span class="st">'l'</span>, xlab<span class="op">=</span><span class="st">"Threshold"</span>, ylab<span class="op">=</span><span class="st">"Relative EVPI"</span><span class="op">)</span></code></pre></div>
 <p><img src="devEVPI_tutorial_files/figure-html/unnamed-chunk-21-1.png" width="700"></p>
 <p>This is indeed a messy, uninformative graph, and the reason is obvious in the INB graph: in many instances, the INB under current information, the denominator, is 0. If INB under perfect information is 0 we will get 0/0 NaN. If INB under perfect information is non-zero, with get +∞. These have two different meanings:</p>
@@ -371,7 +380,7 @@
 </ul>
 <p>The EVPIr graph can therefore be upgraded to accommodate these. We cap it on the Y-axis at 10 (to us, an EVPIr of &gt;10 has the same implications as an EVPIr=+∞). We also label the areas of the X-axis according to whether EVPIr is 0/0 or +∞.</p>
 <p>This requires a bit of processing for the graph:</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">max_y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">EVPIr</span>,na.rm <span class="op">=</span> <span class="cn">T</span><span class="op">)</span>,<span class="fl">10</span><span class="op">)</span>
 <span class="va">yNaN</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">z</span><span class="op">)</span><span class="op">)</span>
 <span class="va">yNaN</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.nan</a></span><span class="op">(</span><span class="va">EVPIr</span><span class="op">)</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span>
@@ -390,19 +399,19 @@
 <h3 id="using-the-voipred-package">Using the voipred package<a class="anchor" aria-label="anchor" href="#using-the-voipred-package"></a>
 </h3>
 <p>The voipred packages encapsulates much of what we have done. Its latest experimental version can be installed via github as follows:</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/remote-reexports.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"resplab/voipred"</span><span class="op">)</span></code></pre></div>
 <p>Once installed…</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">voipred</span><span class="op">)</span></code></pre></div>
 <p>At bare minimum, the voi_glmnet() function in this package requires the model as a GLM object, and the number of simulations requested</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/voi_glm.html">voi_glm</a></span><span class="op">(</span>n_sim<span class="op">=</span><span class="fl">1000</span>,glm_object<span class="op">=</span><span class="va">model</span><span class="op">)</span>
 
 <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">EVPI</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">threshold</span><span class="op">==</span><span class="fl">0.2</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## [1] 0.004828307</span></code></pre>
 <p>The voi_glm function also incorporates likelihood-based and Bayesian bootstrap calculations. We can use this opportunity yo compare the results.</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">res_ML</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/voi_glm.html">voi_glm</a></span><span class="op">(</span>n_sim<span class="op">=</span><span class="fl">1000</span>,glm_object<span class="op">=</span><span class="va">model</span>, mc_type <span class="op">=</span> <span class="st">"likelihood"</span><span class="op">)</span>
 <span class="va">res_BB</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/voi_glm.html">voi_glm</a></span><span class="op">(</span>n_sim<span class="op">=</span><span class="fl">1000</span>,glm_object<span class="op">=</span><span class="va">model</span>, mc_type <span class="op">=</span> <span class="st">"Bayesian_bootstrap"</span><span class="op">)</span>
 

@@ -173,6 +173,7 @@ Imagine for the moment, we know the truth: that the correct model
 associating our predictors of interest to the risk of the outcome is of
 the form
 
+
 $logit(P(Y))= 1 - 0.03899*age - 0.01*lwt + 0.5*smoke$
 
 Because we know the truth, we can calculate the actual risk of outcome,
@@ -299,6 +300,11 @@ the means):
 ENB_model <- mean(NB_model)
 ENB_all <- mean(NB_all)
 ENB_max <- mean(NB_max)
+
+print(ENB_model)
+print(ENB_all)
+print(ENB_max)
+
 ```
 
 ## The value of knowing the truth: EVPI
